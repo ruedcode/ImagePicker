@@ -66,7 +66,7 @@ class CameraView: UIViewController, CLLocationManagerDelegate, CameraManDelegate
     button.setAttributedTitle(title, for: UIControlState())
     button.contentEdgeInsets = UIEdgeInsets(top: 5.0, left: 10.0, bottom: 5.0, right: 10.0)
     button.sizeToFit()
-    button.layer.borderColor = self.configuration.settingsColor.cgColor
+    button.layer.borderColor = UIColor.red.cgColor
     button.layer.borderWidth = 1
     button.layer.cornerRadius = 4
     button.addTarget(self, action: #selector(settingsButtonDidTap), for: .touchUpInside)
