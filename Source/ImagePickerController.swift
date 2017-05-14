@@ -9,7 +9,7 @@ import Photos
     func cancelButtonDidPress(_ imagePicker: ImagePickerController)
 }
 
-open class ImagePickerController: UIViewController {
+open class ImagePickerController: UIViewController, UINavigationControllerDelegate, UIViewControllerTransitioningDelegate {
     
     open var configuration = Configuration()
     
@@ -211,6 +211,29 @@ open class ImagePickerController: UIViewController {
         enableGestures(true)
     }
     
+    func showGallery() {
+        let controller = UIImagePickerController()
+        controller.sourceType = .savedPhotosAlbum
+        controller.delegate = self
+        controller.transitioningDelegate = self
+        present(controller, animated: true, completion: nil)
+    }
+    
+    public func animationController(forPresented presented: UIViewController, presenting: UIViewController, source: UIViewController) -> UIViewControllerAnimatedTransitioning? {
+        
+
+        let frame = CGRect(x: 0, y: galleryView.frame.origin.y, width: bottomContainer.frame.width, height: ImageGalleryView.Dimensions.galleryBarHeight)
+        return ImagePickerControllerAnimationLibrary(originFrame: self.view.frame, fromFrame:frame)
+    }
+    
+//    func interactionControllerForDismissal(using animator: UIViewControllerAnimatedTransitioning) -> UIViewControllerInteractiveTransitioning? {
+//        return self.interactionController
+//    }
+//    
+    public func interactionControllerForPresentation(using animator: UIViewControllerAnimatedTransitioning) -> UIViewControllerInteractiveTransitioning? {
+        return nil
+    }
+    
     // MARK: - Notifications
     
     deinit {
@@ -295,17 +318,18 @@ open class ImagePickerController: UIViewController {
     }
     
     open func expandGalleryView() {
-        galleryView.collectionViewLayout.invalidateLayout()
-        
-        UIView.animate(withDuration: 0.3, animations: {
-            self.updateGalleryViewFrames(GestureConstants.maximumHeight)
-            
-            let scale = (GestureConstants.maximumHeight - ImageGalleryView.Dimensions.galleryBarHeight) / (GestureConstants.minimumHeight - ImageGalleryView.Dimensions.galleryBarHeight)
-            self.galleryView.collectionView.transform = CGAffineTransform(scaleX: scale, y: scale)
-            
-            let value = self.view.frame.width * (scale - 1) / scale
-            self.galleryView.collectionView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right:  value)
-        })
+        showGallery()
+//        galleryView.collectionViewLayout.invalidateLayout()
+//        
+//        UIView.animate(withDuration: 0.3, animations: {
+//            self.updateGalleryViewFrames(GestureConstants.maximumHeight)
+//            
+//            let scale = (GestureConstants.maximumHeight - ImageGalleryView.Dimensions.galleryBarHeight) / (GestureConstants.minimumHeight - ImageGalleryView.Dimensions.galleryBarHeight)
+//            self.galleryView.collectionView.transform = CGAffineTransform(scaleX: scale, y: scale)
+//            
+//            let value = self.view.frame.width * (scale - 1) / scale
+//            self.galleryView.collectionView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right:  value)
+//        })
     }
     
     func updateGalleryViewFrames(_ constant: CGFloat) {
@@ -342,6 +366,18 @@ open class ImagePickerController: UIViewController {
         }
     }
 }
+// MARK: - UIiMagePickerControllerDelegate
+
+extension ImagePickerController: UIImagePickerControllerDelegate {
+    public func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+        picker.dismiss(animated: true, completion: nil)
+    }
+    
+    public func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
+        print("wow")
+    }
+}
+
 
 // MARK: - Action methods
 
