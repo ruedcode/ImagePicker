@@ -7,11 +7,14 @@ import Photos
     func wrapperDidPress(_ imagePicker: ImagePickerController, images: [UIImage])
     func doneButtonDidPress(_ imagePicker: ImagePickerController, images: [UIImage])
     func cancelButtonDidPress(_ imagePicker: ImagePickerController)
+    func imageDidSelected(_ imagePicker: ImagePickerController, image:UIImage)
 }
 
-open class ImagePickerController: UIViewController {
+open class ImagePickerController: UIViewController, UINavigationControllerDelegate{
     
     open var configuration = Configuration()
+    
+    let libraryPickerContainer = UIView()
     
     struct GestureConstants {
         static let maximumHeight: CGFloat = 125
@@ -74,11 +77,13 @@ open class ImagePickerController: UIViewController {
     open var imageLimit = 0
     open var preferredImageSize: CGSize?
     open var startOnFrontCamera = false
+    
     var totalSize: CGSize { return UIScreen.main.bounds.size }
     var initialFrame: CGRect?
     var initialContentOffset: CGPoint?
     var numberOfCells: Int?
     var statusBarHidden = true
+    var isResizedGallery = false
     
     fileprivate var isTakingPicture = false
     open var doneButtonTitle: String? {
@@ -115,6 +120,7 @@ open class ImagePickerController: UIViewController {
             view.addSubview(subview!)
             subview?.translatesAutoresizingMaskIntoConstraints = false
         }
+        galleryView.clipsToBounds = true
         
         view.addSubview(volumeView)
         view.sendSubview(toBack: volumeView)
@@ -126,6 +132,19 @@ open class ImagePickerController: UIViewController {
         
         subscribe()
         setupConstraints()
+        
+        //init library picker
+        let libraryPickerController = UIImagePickerController()
+        libraryPickerController.navigationBar.tintColor = UIColor.black
+        libraryPickerController.sourceType = .photoLibrary
+        libraryPickerController.delegate = self
+        addChildViewController(libraryPickerController)
+        
+        libraryPickerContainer.frame = CGRect(x:0, y:0, width:view.frame.width, height:0)
+        libraryPickerContainer.clipsToBounds = true
+        libraryPickerContainer.addSubview(libraryPickerController.view)
+        
+        view.addSubview(libraryPickerContainer)
     }
     
     open override func viewWillAppear(_ animated: Bool) {
@@ -211,6 +230,7 @@ open class ImagePickerController: UIViewController {
         enableGestures(true)
     }
     
+    
     // MARK: - Notifications
     
     deinit {
@@ -262,7 +282,15 @@ open class ImagePickerController: UIViewController {
     
     func adjustButtonTitle(_ notification: Notification) {
         guard let sender = notification.object as? ImageStack else { return }
-        
+        var images: [UIImage]
+        if let preferredImageSize = preferredImageSize {
+            images = AssetManager.resolveAssets(sender.assets, size: preferredImageSize)
+        } else {
+            images = AssetManager.resolveAssets(sender.assets)
+        }
+        if let image = images.first {
+            delegate?.imageDidSelected(self, image: image)
+        }
 //        let title = !sender.assets.isEmpty ?
 //            configuration.doneButtonTitle : configuration.cancelButtonTitle
         //    bottomContainer.doneButton.setTitle(title, for: UIControlState())
@@ -294,24 +322,48 @@ open class ImagePickerController: UIViewController {
         })
     }
     
-    open func expandGalleryView() {
-        galleryView.collectionViewLayout.invalidateLayout()
+    open func expandLibraryPicker() {
+        UIView.animate(withDuration: 0.3, animations: { () -> Void in
+            self.libraryPickerContainer.frame = CGRect(x:0,
+                                                       y:-(self.view.frame.height - self.galleryView.frame.origin.y - ImageGalleryView.Dimensions.galleryBarHeight),
+                                                       width:self.view.frame.width,
+                                                       height:self.view.frame.height
+            )
+        }, completion: { (completed: Bool) -> Void in
+            UIView.animate(withDuration: 0.3, animations: { () -> Void in
+                self.libraryPickerContainer.frame.origin.y = 0
+            })
+            
+        })
+    }
+    
+    open func unexpandLibraryPicker() {
+        UIView.animate(withDuration: 0.3, animations: { () -> Void in
+            self.libraryPickerContainer.frame = CGRect(x:0,
+                                                       y:self.galleryView.frame.origin.y + ImageGalleryView.Dimensions.galleryBarHeight,
+                                                       width:self.view.frame.width,
+                                                       height:0
+            )
+        })
+    }
+    
+    open func collapseLibraryPicker() {
         
         UIView.animate(withDuration: 0.3, animations: {
-            self.updateGalleryViewFrames(GestureConstants.maximumHeight)
+            self.libraryPickerContainer.frame.origin.y = self.view.frame.height
+        }, completion: { (completed: Bool) -> Void in
+            self.libraryPickerContainer.frame = CGRect(x:0,
+                                                       y:0,
+                                                       width:self.view.frame.width,
+                                                       height:0
+            )
             
-            let scale = (GestureConstants.maximumHeight - ImageGalleryView.Dimensions.galleryBarHeight) / (GestureConstants.minimumHeight - ImageGalleryView.Dimensions.galleryBarHeight)
-            self.galleryView.collectionView.transform = CGAffineTransform(scaleX: scale, y: scale)
-            
-            let value = self.view.frame.width * (scale - 1) / scale
-            self.galleryView.collectionView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right:  value)
         })
     }
     
     func updateGalleryViewFrames(_ constant: CGFloat) {
         galleryView.frame.origin.y = totalSize.height - bottomContainer.frame.height - constant
         galleryView.frame.size.height = constant
-        galleryView.clipsToBounds = true
     }
     
     func enableGestures(_ enabled: Bool) {
@@ -340,8 +392,33 @@ open class ImagePickerController: UIViewController {
         } else {
             action()
         }
+        var images: [UIImage]
+        if let preferredImageSize = preferredImageSize {
+            images = AssetManager.resolveAssets(stack.assets, size: preferredImageSize)
+        } else {
+            images = AssetManager.resolveAssets(stack.assets)
+        }
+        if let image = images.first {
+            delegate?.imageDidSelected(self, image: image)
+        }
+    
     }
 }
+// MARK: - UIImagePickerControllerDelegate
+
+extension ImagePickerController: UIImagePickerControllerDelegate {
+    public func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+        collapseLibraryPicker()
+    }
+    
+    public func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
+        collapseLibraryPicker()
+        if let image = info[UIImagePickerControllerOriginalImage] as? UIImage {
+            delegate?.imageDidSelected(self, image: image)
+        }
+    }
+}
+
 
 // MARK: - Action methods
 
@@ -465,11 +542,14 @@ extension ImagePickerController: ImageGalleryPanGestureDelegate {
         initialFrame = galleryView.frame
         initialContentOffset = galleryView.collectionView.contentOffset
         if let contentOffset = initialContentOffset { numberOfCells = Int(contentOffset.x / collectionSize.width) }
+        isResizedGallery = false
     }
     
     func panGestureRecognizerHandler(_ gesture: UIPanGestureRecognizer) {
         let translation = gesture.translation(in: view)
         let velocity = gesture.velocity(in: view)
+        
+        
         
         if gesture.location(in: view).y > galleryView.frame.origin.y - 25 {
             gesture.state == .began ? panGestureDidStart() : panGestureDidChange(translation)
@@ -485,11 +565,29 @@ extension ImagePickerController: ImageGalleryPanGestureDelegate {
         
         let galleryHeight = initialFrame.height - translation.y
         
-        if galleryHeight >= GestureConstants.maximumHeight { return }
+        //display picker
+        if galleryHeight >= GestureConstants.maximumHeight || libraryPickerContainer.frame.height > 0 {
+            if !isResizedGallery {
+                let y = galleryView.frame.origin.y + ImageGalleryView.Dimensions.galleryBarHeight + translation.y
+                if y > 50 {
+                    let height = galleryView.frame.origin.y + ImageGalleryView.Dimensions.galleryBarHeight - y
+                    libraryPickerContainer.frame = CGRect(x: 0, y: y, width: view.frame.width, height: height > 0 ? height : 0)
+                }
+                else {
+                    expandLibraryPicker()
+                }
+            }
+            return
+            
+        }
         
+        unexpandLibraryPicker()
         if galleryHeight <= ImageGalleryView.Dimensions.galleryBarHeight {
+            isResizedGallery = true
             updateGalleryViewFrames(ImageGalleryView.Dimensions.galleryBarHeight)
-        } else if galleryHeight >= GestureConstants.minimumHeight {
+        }
+        else if galleryHeight >= GestureConstants.minimumHeight {
+            isResizedGallery = true
             let scale = (galleryHeight - ImageGalleryView.Dimensions.galleryBarHeight) / (GestureConstants.minimumHeight - ImageGalleryView.Dimensions.galleryBarHeight)
             galleryView.collectionView.transform = CGAffineTransform(scaleX: scale, y: scale)
             galleryView.frame.origin.y = initialFrame.origin.y + translation.y
@@ -497,7 +595,9 @@ extension ImagePickerController: ImageGalleryPanGestureDelegate {
             
             let value = view.frame.width * (scale - 1) / scale
             galleryView.collectionView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right:  value)
-        } else {
+        }
+        else {
+            isResizedGallery = true
             galleryView.frame.origin.y = initialFrame.origin.y + translation.y
             galleryView.frame.size.height = initialFrame.height - translation.y
         }
@@ -511,9 +611,17 @@ extension ImagePickerController: ImageGalleryPanGestureDelegate {
         if galleryView.frame.height < GestureConstants.minimumHeight && velocity.y < 0 {
             showGalleryView()
         } else if velocity.y < -GestureConstants.velocity {
-            expandGalleryView()
+            if libraryPickerContainer.frame.height > 0 {
+                expandLibraryPicker()
+            }
         } else if velocity.y > GestureConstants.velocity || galleryHeight < GestureConstants.minimumHeight {
             collapseGalleryView(nil)
+        }
+        else if libraryPickerContainer.frame.height > 50 {
+            expandLibraryPicker()
+        }
+        else {
+            unexpandLibraryPicker()
         }
     }
 }
