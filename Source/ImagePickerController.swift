@@ -25,6 +25,7 @@ open class ImagePickerController: UIViewController {
         galleryView.selectedStack = self.stack
         galleryView.collectionView.layer.anchorPoint = CGPoint(x: 0, y: 0)
         galleryView.imageLimit = self.imageLimit
+        galleryView.clipsToBounds = true
         
         return galleryView
         }()
@@ -39,7 +40,7 @@ open class ImagePickerController: UIViewController {
     
     lazy var topView: TopView = { [unowned self] in
         let view = TopView(configuration: self.configuration)
-        view.backgroundColor = UIColor(red:0.31, green:0.31, blue:0.31, alpha:0.4)
+        view.backgroundColor = self.configuration.backgroundColor
         view.delegate = self
         
         return view
@@ -514,6 +515,7 @@ extension ImagePickerController: ImageGalleryPanGestureDelegate {
             expandGalleryView()
         } else if velocity.y > GestureConstants.velocity || galleryHeight < GestureConstants.minimumHeight {
             collapseGalleryView(nil)
+            unex
         }
     }
 }

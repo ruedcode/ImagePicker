@@ -4,13 +4,13 @@ public struct Configuration {
 
     // MARK: Colors
 
-    public var backgroundColor = UIColor(red:0.31, green:0.31, blue:0.31, alpha:0.4)
-    public var gallerySeparatorColor = UIColor(red:0.31, green:0.31, blue:0.31, alpha:0.4)
+    public var backgroundColor = UIColor.clear
+    public var gallerySeparatorColor = UIColor.clear
     public var mainColor = UIColor(red: 0.09, green: 0.11, blue: 0.13, alpha: 1)
     public var noImagesColor = UIColor(red: 0.86, green: 0.86, blue: 0.86, alpha: 1)
     public var noCameraColor = UIColor(red: 0.86, green: 0.86, blue: 0.86, alpha: 1)
     public var settingsColor = UIColor.white
-    public var bottomContainerColor = UIColor(red:0.31, green:0.31, blue:0.31, alpha:0.4)
+    public var bottomContainerColor = UIColor.clear
 
     // MARK: Fonts
 
