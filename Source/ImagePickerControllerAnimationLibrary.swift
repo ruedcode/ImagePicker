@@ -31,7 +31,6 @@ class ImagePickerControllerAnimationLibrary: NSObject, UIViewControllerAnimatedT
             var frame = offsetFrame
             frame.size.height = 0
             toView.frame = frame
-            print("frame \(frame) \(self.offsetFrame.height)")
             containerView.addSubview(toView)
             
             UIView.animate(withDuration: 0.5, animations: { () -> Void in
