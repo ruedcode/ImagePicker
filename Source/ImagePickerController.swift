@@ -617,7 +617,7 @@ extension ImagePickerController: ImageGalleryPanGestureDelegate {
             }
         } else if velocity.y > GestureConstants.velocity || galleryHeight < GestureConstants.minimumHeight {
             collapseGalleryView(nil)
-            unex
+            unexpandLibraryPicker()
         }
         else if libraryPickerContainer.frame.height > 50 {
             expandLibraryPicker()

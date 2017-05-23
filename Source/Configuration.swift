@@ -37,8 +37,8 @@ public struct Configuration {
     // MARK: Dimensions
 
     public var cellSpacing: CGFloat = 2
-    public var indicatorWidth: CGFloat = 41
-    public var indicatorHeight: CGFloat = 8
+    public var indicatorWidth: CGFloat = 54
+    public var indicatorHeight: CGFloat = 7
 
     // MARK: Custom behaviour
 
@@ -52,8 +52,8 @@ public struct Configuration {
     // MARK: Images
     public var indicatorView: UIView = {
         let view = UIView()
-        view.backgroundColor = UIColor.white.withAlphaComponent(0.6)
-        view.layer.cornerRadius = 4
+//        view.backgroundColor = UIColor.white.withAlphaComponent(0.6)
+//        view.layer.cornerRadius = 4
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
