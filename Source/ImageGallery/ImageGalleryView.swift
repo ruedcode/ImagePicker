@@ -93,12 +93,6 @@ open class ImageGalleryView: UIView {
     public init(configuration: Configuration? = nil) {
         if let configuration = configuration {
             self.configuration = configuration
-            
-            let image = AssetManager.getImage("ARROW")
-            let imageView = UIImageView(image: image)
-            imageView.frame = CGRect(x: 0, y: 0, width: configuration.indicatorWidth, height: configuration.indicatorHeight)
-            configuration.indicatorView.addSubview(imageView)
-            
         }
         super.init(frame: .zero)
         configure()
@@ -114,7 +108,7 @@ open class ImageGalleryView: UIView {
     }
     
     func configure() {
-//        backgroundColor = configuration.mainColor
+//        backgroundColor = configuration.mainColor                                                                                                                                                                                                                                                                                                                     
         
         collectionView.register(ImageGalleryViewCell.self,
                                 forCellWithReuseIdentifier: CollectionView.reusableIdentifier)
