@@ -14,7 +14,6 @@ open class ImagePickerController: UIViewController, UINavigationControllerDelega
     
     open var configuration = Configuration()
     
-    let libraryPickerContainer = UIView()
     
     struct GestureConstants {
         static let maximumHeight: CGFloat = 125
@@ -120,32 +119,23 @@ open class ImagePickerController: UIViewController, UINavigationControllerDelega
         for subview in [cameraController.view, galleryView, bottomContainer, topView] {
             view.addSubview(subview!)
             subview?.translatesAutoresizingMaskIntoConstraints = false
+            subview?.layoutIfNeeded()
         }
+        topView.alpha = 0
         galleryView.clipsToBounds = true
-        
+
         view.addSubview(volumeView)
         view.sendSubview(toBack: volumeView)
         
         view.backgroundColor = UIColor.white
         view.backgroundColor = configuration.mainColor
         
-        cameraController.view.addGestureRecognizer(panGestureRecognizer)
-        
+//        cameraController.view.addGestureRecognizer(panGestureRecognizer)
+
         subscribe()
         setupConstraints()
         
         //init library picker
-        let libraryPickerController = UIImagePickerController()
-        libraryPickerController.navigationBar.tintColor = UIColor.black
-        libraryPickerController.sourceType = .photoLibrary
-        libraryPickerController.delegate = self
-        addChildViewController(libraryPickerController)
-        
-        libraryPickerContainer.frame = CGRect(x:0, y:0, width:view.frame.width, height:0)
-        libraryPickerContainer.clipsToBounds = true
-        libraryPickerContainer.addSubview(libraryPickerController.view)
-        
-        view.addSubview(libraryPickerContainer)
     }
     
     open override func viewWillAppear(_ animated: Bool) {
@@ -154,7 +144,7 @@ open class ImagePickerController: UIViewController, UINavigationControllerDelega
         _ = try? AVAudioSession.sharedInstance().setActive(true)
         
         statusBarHidden = UIApplication.shared.isStatusBarHidden
-        UIApplication.shared.setStatusBarHidden(true, with: .fade)
+        UIApplication.shared.setStatusBarHidden(true, with: .none)
     }
     
     open override func viewDidAppear(_ animated: Bool) {
@@ -166,8 +156,9 @@ open class ImagePickerController: UIViewController, UINavigationControllerDelega
         galleryView.collectionView.transform = CGAffineTransform.identity
         galleryView.collectionView.contentInset = UIEdgeInsets.zero
         
+    
         galleryView.frame = CGRect(x: 0,
-                                   y: totalSize.height - bottomContainer.frame.height - galleryHeight,
+                                   y: totalSize.height - BottomContainerView.Dimensions.height - galleryHeight,
                                    width: totalSize.width,
                                    height: galleryHeight)
         galleryView.updateFrames()
@@ -323,44 +314,20 @@ open class ImagePickerController: UIViewController, UINavigationControllerDelega
         })
     }
     
-    open func expandLibraryPicker() {
-        UIView.animate(withDuration: 0.3, animations: { () -> Void in
-            self.libraryPickerContainer.frame = CGRect(x:0,
-                                                       y:-(self.view.frame.height - self.galleryView.frame.origin.y - ImageGalleryView.Dimensions.galleryBarHeight),
-                                                       width:self.view.frame.width,
-                                                       height:self.view.frame.height
-            )
-        }, completion: { (completed: Bool) -> Void in
-            UIView.animate(withDuration: 0.3, animations: { () -> Void in
-                self.libraryPickerContainer.frame.origin.y = 0
-            })
-            
-        })
-    }
-    
-    open func unexpandLibraryPicker() {
-        UIView.animate(withDuration: 0.3, animations: { () -> Void in
-            self.libraryPickerContainer.frame = CGRect(x:0,
-                                                       y:self.galleryView.frame.origin.y + ImageGalleryView.Dimensions.galleryBarHeight,
-                                                       width:self.view.frame.width,
-                                                       height:0
-            )
-        })
-    }
-    
-    open func collapseLibraryPicker() {
+    open func expandGalleryView() {
+        galleryView.collectionViewLayout.invalidateLayout()
         
         UIView.animate(withDuration: 0.3, animations: {
-            self.libraryPickerContainer.frame.origin.y = self.view.frame.height
-        }, completion: { (completed: Bool) -> Void in
-            self.libraryPickerContainer.frame = CGRect(x:0,
-                                                       y:0,
-                                                       width:self.view.frame.width,
-                                                       height:0
-            )
+            self.updateGalleryViewFrames(GestureConstants.maximumHeight)
             
+            let scale = (GestureConstants.maximumHeight - ImageGalleryView.Dimensions.galleryBarHeight) / (GestureConstants.minimumHeight - ImageGalleryView.Dimensions.galleryBarHeight)
+            self.galleryView.collectionView.transform = CGAffineTransform(scaleX: scale, y: scale)
+            
+            let value = self.view.frame.width * (scale - 1) / scale
+            self.galleryView.collectionView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right:  value)
         })
     }
+    
     
     func updateGalleryViewFrames(_ constant: CGFloat) {
         galleryView.frame.origin.y = totalSize.height - bottomContainer.frame.height - constant
@@ -405,21 +372,6 @@ open class ImagePickerController: UIViewController, UINavigationControllerDelega
     
     }
 }
-// MARK: - UIImagePickerControllerDelegate
-
-extension ImagePickerController: UIImagePickerControllerDelegate {
-    public func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
-        collapseLibraryPicker()
-    }
-    
-    public func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
-        collapseLibraryPicker()
-        if let image = info[UIImagePickerControllerOriginalImage] as? UIImage {
-            delegate?.imageDidSelected(self, image: image)
-        }
-    }
-}
-
 
 // MARK: - Action methods
 
@@ -566,23 +518,9 @@ extension ImagePickerController: ImageGalleryPanGestureDelegate {
         
         let galleryHeight = initialFrame.height - translation.y
         
-        //display picker
-        if galleryHeight >= GestureConstants.maximumHeight || libraryPickerContainer.frame.height > 0 {
-            if !isResizedGallery {
-                let y = galleryView.frame.origin.y + ImageGalleryView.Dimensions.galleryBarHeight + translation.y
-                if y > 50 {
-                    let height = galleryView.frame.origin.y + ImageGalleryView.Dimensions.galleryBarHeight - y
-                    libraryPickerContainer.frame = CGRect(x: 0, y: y, width: view.frame.width, height: height > 0 ? height : 0)
-                }
-                else {
-                    expandLibraryPicker()
-                }
-            }
-            return
-            
-        }
+        if galleryHeight >= GestureConstants.maximumHeight { return }
         
-        unexpandLibraryPicker()
+        
         if galleryHeight <= ImageGalleryView.Dimensions.galleryBarHeight {
             isResizedGallery = true
             updateGalleryViewFrames(ImageGalleryView.Dimensions.galleryBarHeight)
@@ -612,18 +550,9 @@ extension ImagePickerController: ImageGalleryPanGestureDelegate {
         if galleryView.frame.height < GestureConstants.minimumHeight && velocity.y < 0 {
             showGalleryView()
         } else if velocity.y < -GestureConstants.velocity {
-            if libraryPickerContainer.frame.height > 0 {
-                expandLibraryPicker()
-            }
+            expandGalleryView()
         } else if velocity.y > GestureConstants.velocity || galleryHeight < GestureConstants.minimumHeight {
             collapseGalleryView(nil)
-            unexpandLibraryPicker()
-        }
-        else if libraryPickerContainer.frame.height > 50 {
-            expandLibraryPicker()
-        }
-        else {
-            unexpandLibraryPicker()
         }
     }
 }
