@@ -7,6 +7,7 @@ import Photos
     func wrapperDidPress(_ imagePicker: ImagePickerController, images: [UIImage])
     func doneButtonDidPress(_ imagePicker: ImagePickerController, images: [UIImage])
     func cancelButtonDidPress(_ imagePicker: ImagePickerController)
+    func imageWillSelected(_ imagePicker: ImagePickerController)
     func imageDidSelected(_ imagePicker: ImagePickerController, image:UIImage)
 }
 
@@ -130,6 +131,7 @@ open class ImagePickerController: UIViewController, UINavigationControllerDelega
         view.backgroundColor = UIColor.white
         view.backgroundColor = configuration.mainColor
         
+        galleryView.addGestureRecognizer(panGestureRecognizer)
 //        cameraController.view.addGestureRecognizer(panGestureRecognizer)
 
         subscribe()
@@ -241,10 +243,10 @@ open class ImagePickerController: UIViewController, UINavigationControllerDelega
                                                name: NSNotification.Name(rawValue: ImageStack.Notifications.imageDidDrop),
                                                object: nil)
         
-        NotificationCenter.default.addObserver(self,
-                                               selector: #selector(didReloadAssets(_:)),
-                                               name: NSNotification.Name(rawValue: ImageStack.Notifications.stackDidReload),
-                                               object: nil)
+//        NotificationCenter.default.addObserver(self,
+//                                               selector: #selector(didReloadAssets(_:)),
+//                                               name: NSNotification.Name(rawValue: ImageStack.Notifications.stackDidReload),
+//                                               object: nil)
         
         NotificationCenter.default.addObserver(self,
                                                selector: #selector(volumeChanged(_:)),
@@ -337,7 +339,7 @@ open class ImagePickerController: UIViewController, UINavigationControllerDelega
     func enableGestures(_ enabled: Bool) {
         galleryView.alpha = enabled ? 1 : 0
         bottomContainer.pickerButton.isEnabled = enabled
-        //    bottomContainer.tapGestureRecognizer.isEnabled = enabled
+//        bottomContainer.tapGestureRecognizer.isEnabled = enabled
         bottomContainer.flashButton.isEnabled = enabled
         bottomContainer.rotateCamera.isEnabled = configuration.canRotateCamera
     }
@@ -378,6 +380,7 @@ open class ImagePickerController: UIViewController, UINavigationControllerDelega
 extension ImagePickerController: BottomContainerViewDelegate {
     
     func pickerButtonDidPress() {
+        delegate?.imageWillSelected(self)
         takePicture()
     }
     
