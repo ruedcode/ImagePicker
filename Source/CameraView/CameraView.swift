@@ -258,9 +258,9 @@ class CameraView: UIViewController, CLLocationManagerDelegate, CameraManDelegate
   // MARK: - Private helpers
 
   func showNoCamera(_ show: Bool) {
-    [noCameraButton, noCameraLabel].forEach {
-      show ? view.addSubview($0) : $0.removeFromSuperview()
-    }
+//    [noCameraButton, noCameraLabel].forEach {
+//      show ? view.addSubview($0) : $0.removeFromSuperview()
+//    }
   }
 
   // CameraManDelegate

@@ -212,7 +212,7 @@ open class ImagePickerController: UIViewController, UINavigationControllerDelega
         alertController.addAction(alertAction)
         alertController.addAction(cancelAction)
         
-        present(alertController, animated: true, completion: nil)
+//        present(alertController, animated: true, completion: nil)
     }
     
     func hideViews() {
