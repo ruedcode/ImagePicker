@@ -353,21 +353,28 @@ open class ImagePickerController: UIViewController, UINavigationControllerDelega
         isTakingPicture = true
         bottomContainer.pickerButton.isEnabled = false
         //    bottomContainer.stackView.startLoader()
-        let action: (Void) -> Void = { [unowned self] in
-            self.cameraController.takePicture { self.isTakingPicture = false }
+		let action: () -> Void = { [unowned self] in
+			self.cameraController.takePicture { [unowned self] (image) in
+				self.isTakingPicture = false
+				if let image = image {
+					self.delegate?.imageDidSelected(self, image: image)
+				}
+			}
         }
         
         if configuration.collapseCollectionViewWhileShot {
             collapseGalleryView(action)
         } else {
             action()
+			return
         }
-        var images: [UIImage]
-        if let preferredImageSize = preferredImageSize {
-            images = AssetManager.resolveAssets(stack.assets, size: preferredImageSize)
-        } else {
-            images = AssetManager.resolveAssets(stack.assets)
-        }
+		var images : [UIImage]
+		if let preferredImageSize = preferredImageSize {
+			images = AssetManager.resolveAssets(stack.assets, size: preferredImageSize)
+		} else {
+			images = AssetManager.resolveAssets(stack.assets)
+		}
+		
         if let image = images.first {
             delegate?.imageDidSelected(self, image: image)
         }
