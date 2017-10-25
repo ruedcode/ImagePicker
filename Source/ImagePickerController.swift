@@ -117,13 +117,13 @@ open class ImagePickerController: UIViewController, UINavigationControllerDelega
     open override func viewDidLoad() {
         super.viewDidLoad()
         
-        for subview in [cameraController.view, galleryView, bottomContainer, topView] {
+        for subview in [cameraController.view, /*galleryView,*/ bottomContainer, topView] {
             view.addSubview(subview!)
             subview?.translatesAutoresizingMaskIntoConstraints = false
             subview?.layoutIfNeeded()
         }
         topView.alpha = 0
-        galleryView.clipsToBounds = true
+//        galleryView.clipsToBounds = true
 
         view.addSubview(volumeView)
         view.sendSubview(toBack: volumeView)
@@ -131,8 +131,7 @@ open class ImagePickerController: UIViewController, UINavigationControllerDelega
         view.backgroundColor = UIColor.white
         view.backgroundColor = configuration.mainColor
         
-        galleryView.addGestureRecognizer(panGestureRecognizer)
-//        cameraController.view.addGestureRecognizer(panGestureRecognizer)
+//        galleryView.addGestureRecognizer(panGestureRecognizer)
 
         subscribe()
         setupConstraints()
