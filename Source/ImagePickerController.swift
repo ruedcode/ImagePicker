@@ -355,6 +355,7 @@ open class ImagePickerController: UIViewController, UINavigationControllerDelega
 		let action: () -> Void = { [unowned self] in
 			self.cameraController.takePicture { [unowned self] (image) in
 				self.isTakingPicture = false
+				self.bottomContainer.pickerButton.isEnabled = true
 				if let image = image {
 					self.delegate?.imageDidSelected(self, image: image)
 				}
