@@ -9,6 +9,7 @@ import Photos
     func cancelButtonDidPress(_ imagePicker: ImagePickerController)
     func imageWillSelected(_ imagePicker: ImagePickerController)
     func imageDidSelected(_ imagePicker: ImagePickerController, image:UIImage)
+	func cameraDidFishedRequestStatus(_ imagePicker: ImagePickerController)
 }
 
 open class ImagePickerController: UIViewController, UINavigationControllerDelegate{
@@ -451,6 +452,10 @@ extension ImagePickerController: CameraViewDelegate {
         bottomContainer.rotateCamera.isHidden = true
         bottomContainer.pickerButton.isEnabled = false
     }
+	
+	func cameraFinishedRequestStatus() {
+		delegate?.cameraDidFishedRequestStatus(self)
+	}
     
     // MARK: - Rotation
     

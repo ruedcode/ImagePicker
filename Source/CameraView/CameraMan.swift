@@ -194,6 +194,18 @@ class CameraMan {
         
         queue.async {
             self.lock {
+				var torch : AVCaptureTorchMode = .auto
+				switch mode {
+				case .on:
+						torch = .on
+					break
+				case .off:
+						torch = .off
+					break
+				case .auto:
+					break
+				}
+				device.torchMode = torch
                 device.flashMode = mode
             }
         }

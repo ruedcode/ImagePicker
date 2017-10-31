@@ -7,6 +7,7 @@ protocol CameraViewDelegate: class {
   func setFlashButtonHidden(_ hidden: Bool)
   func imageToLibrary()
   func cameraNotAvailable()
+  func cameraFinishedRequestStatus()
 }
 
 class CameraView: UIViewController, CLLocationManagerDelegate, CameraManDelegate {
@@ -267,6 +268,7 @@ class CameraView: UIViewController, CLLocationManagerDelegate, CameraManDelegate
     showNoCamera(true)
     focusImageView.isHidden = true
     delegate?.cameraNotAvailable()
+	
   }
 
   func cameraMan(_ cameraMan: CameraMan, didChangeInput input: AVCaptureDeviceInput) {
@@ -275,5 +277,6 @@ class CameraView: UIViewController, CLLocationManagerDelegate, CameraManDelegate
 
   func cameraManDidStart(_ cameraMan: CameraMan) {
     setupPreviewLayer()
+	delegate?.cameraFinishedRequestStatus()
   }
 }
