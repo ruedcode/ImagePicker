@@ -144,7 +144,7 @@ extension TopView {
 extension ImagePickerController {
     
     func setupConstraints() {
-        let attributes: [NSLayoutAttribute] = [.bottom, .right, .width]
+        let attributes: [NSLayoutAttribute] = [.right, .width]
         let topViewAttributes: [NSLayoutAttribute] = [.left, .top, .width]
         
         for attribute in attributes {
@@ -152,7 +152,11 @@ extension ImagePickerController {
                                                   relatedBy: .equal, toItem: view, attribute: attribute,
                                                   multiplier: 1, constant: 0))
         }
-        
+
+		view.addConstraint(NSLayoutConstraint(item: bottomContainer, attribute: .bottom,
+											  relatedBy: .equal, toItem: view, attribute: .bottom,
+											  multiplier: 1, constant: UIDevice().userInterfaceIdiom == .phone && UIScreen.main.nativeBounds.height == 2436 ? -34 : 0))
+		
 //        for attribute: NSLayoutAttribute in [.left, .top, .width] {
 //            view.addConstraint(NSLayoutConstraint(item: cameraController.view, attribute: attribute,
 //                                                  relatedBy: .equal, toItem: view, attribute: attribute,

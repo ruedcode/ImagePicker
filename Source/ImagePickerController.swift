@@ -158,7 +158,7 @@ open class ImagePickerController: UIViewController, UINavigationControllerDelega
         galleryView.collectionView.transform = CGAffineTransform.identity
         galleryView.collectionView.contentInset = UIEdgeInsets.zero
         
-    
+		
         galleryView.frame = CGRect(x: 0,
                                    y: totalSize.height - BottomContainerView.Dimensions.height - galleryHeight,
                                    width: totalSize.width,
