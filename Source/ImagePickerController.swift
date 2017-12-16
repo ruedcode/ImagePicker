@@ -253,10 +253,10 @@ open class ImagePickerController: UIViewController, UINavigationControllerDelega
                                                name: NSNotification.Name(rawValue: "AVSystemController_SystemVolumeDidChangeNotification"),
                                                object: nil)
         
-//        NotificationCenter.default.addObserver(self,
-//                                               selector: #selector(handleRotation(_:)),
-//                                               name: NSNotification.Name.UIDeviceOrientationDidChange,
-//                                               object: nil)
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(handleRotation(_:)),
+                                               name: NSNotification.Name.UIDeviceOrientationDidChange,
+                                               object: nil)
     }
     
     func didReloadAssets(_ notification: Notification) {
@@ -472,17 +472,18 @@ extension ImagePickerController: CameraViewDelegate {
             //        $0.transform = rotate
             //      }
             
-            self.galleryView.collectionViewLayout.invalidateLayout()
-            
-            let translate: CGAffineTransform
-            if [UIDeviceOrientation.landscapeLeft, UIDeviceOrientation.landscapeRight]
-                .contains(UIDevice.current.orientation) {
-                translate = CGAffineTransform(translationX: -20, y: 15)
-            } else {
-                translate = CGAffineTransform.identity
-            }
-            
+//            self.galleryView.collectionViewLayout.invalidateLayout()
+			
+            let translate: CGAffineTransform = CGAffineTransform.identity
+//            if [UIDeviceOrientation.landscapeLeft, UIDeviceOrientation.landscapeRight]
+//                .contains(UIDevice.current.orientation) {
+//                translate = CGAffineTransform.identity
+//            } else {
+//                translate = CGAffineTransform.identity
+//            }
+			
             self.bottomContainer.flashButton.transform = rotate.concatenating(translate)
+			self.bottomContainer.rotateCamera.transform = rotate.concatenating(translate)
         })
     }
 }
